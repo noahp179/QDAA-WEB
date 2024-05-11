@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Queen's Premier Undergraduate Data analytics Club</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#work">Our Work</a></li>
+            <li><a href="#partners">Partners</a></li>
+            <li><a href="#events">Events</a></li>
+            <li><a href="#hiring">Hiring</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="sponsor.html">Sponsor Us</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="intro" class="section-intro">
+            <header>
+                <h1>Welcome To The Top Data Analytics Club at Queen's</h1>
+            </header>
+        </section>
+        <section id="about" class="section-white">
+            <div class="section-header">
+                <h3>What we do</h3>
+            </div>
+            <div class="column">
+                <h2><p>We provide Queen's students with the opportunity to learn about data analytics and its application into the real world.</h2>
+                <ul>
+                    <li>Career Education</li>
+                    <li>Community</li>
+                    <li>Pannels</li>
+                    <li>Workshops</li>
+                </ul>
+            </div>
+            <div class="column">
+                <h2>We focus on informing students about how data and analytics can be used to solve real-world problems.</h2>
+            </div>
+        </section>
+        <section id="Projects" class="section-gray">
+            <div class="section-header">
+                <h3>Projects</h3>
+            </div>
+            <div class="project-column">
+                <img src="images/r.jpg" alt="Project 1">
+                <p>This project uses image recognition to solve Rubik's Cube puzzles, providing users with step-by-step instructions based on captured images.</p>
+            </div>
+            <div class="project-column">
+                <img src="images/c.jpg" alt="Project 2">
+                <p>A real-time system designed to detect fraudulent activities by analyzing patterns and anomalies in large datasets, enhancing security across industries.</p>
+            </div>
+            <div class="project-column">
+                <img src="images/d.jpg" alt="Project 3">
+                <p>Development and implementation of mathematical models to analyze financial markets, aiming to generate profits by identifying optimal trading opportunities.</p>
+            </div>
+        </section>
+        <section id="hiring" class="section-blue">
+            <h1>Our Previous and Current Executives Have Interned At:</h1>
+            <div id="slider-root">
+                <img class="slide" src="images/bell.png" alt="Image 1">
+                <img class="slide" src="images/mlse2.png" alt="Image 2">
+                <img class="slide" src="images/bdc.png" alt="Image 3">
+                <img class="slide" src="images/bgis.png" alt="Image 4">
+                <img class="slide" src="images/kinross.png" alt="Image 5">
+                <img class="slide" src="images/del.png" alt="Image 6">
+                <img class="slide" src="images/cibc.png" alt="Image 7">
+                <img class="slide" src="images/fid.png" alt="Image 8">
+                <img class="slide" src="images/td.png" alt="Image 9">
+            </div>
+            <div class="hiring-content">
+                <h1>Fall Hiring</h1>
+                <p>Find your place.</p>
+                <div class="buttons">
+                    <a href="#" class="button">Hiring Package</a>
+                    <a href="#" class="button">Hiring Page</a>
+                </div>
+            </div>
+        </section>
+        <!-- Add more sections here as needed -->
+    </main>
+    <footer>
+        <a href="#annual-report">2022-2023 Annual Report</a>
+    </footer>
+</body>
+</html>
+
+<script>
+    let slideIndex = 0;
+    let slides = document.getElementsByClassName("slide");
+    
+    function showSlides() {
+        for (let i = 0; i < slides.length; i++) {
+            slides[i].style.transform = `translateX(-${100 * slideIndex}%)`;
+        }
+        slideIndex++;
+        if (slideIndex >= slides.length) {
+            slideIndex = 0;
+        }
+        setTimeout(showSlides, 2000); // Change slide every 2 seconds
+    }
+    
+    showSlides();
+</script>

@@ -1,0 +1,223 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px 0;
+    z-index: 1000;
+    text-align: center;
+}
+
+h3 {
+    font-size: 4em;
+}
+
+nav ul {
+    list-style-type: none;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 20px;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+}
+
+footer {
+    padding: 10px 0;
+    text-align: center;
+}
+
+.section-intro {
+    background-image: url('images/front.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: white;
+    height: 100vh; /* Full viewport height */
+    padding: 1px 0;
+    font: bold
+}
+
+.section-intro header h1 {
+    font-size: 6em; /* Increase font size */
+    text-align: left; /* Align text to the right */
+    padding-left: 65px; /* Move text to the right */
+}
+
+.section-intro header p {
+    font-size: 1.5em; /* Increase paragraph font size for visibility */
+    text-align: left; /* Align paragraph text to the right */
+    padding-left: 75px; /* Move paragraph text to the right */
+}
+
+.section-white,
+.section-gray,
+.section-blue {
+    height: 100vh; /* Full viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align items to the start of the container */
+    flex-wrap: wrap; /* Allow columns to wrap on smaller screens */
+}
+
+.column {
+    flex: 0 0 calc(50% - 20px); /* Set column width to 1/2 of container width */
+    margin: 10px; /* Add margin between columns */
+    text-align: center; /* Center align column content */
+}
+
+.section-header {
+    width: 100%;
+    text-align: center;
+    margin-top: -50px; /* Move the title up */
+}
+
+.section-header h3 {
+    font-size: 6em; /* Reduce size for better readability */
+    font-weight: bold; /* Make header bold */
+    margin-bottom: 0.25em; /* Add space below header */
+}
+
+.column h2 {
+    font-size: 2em; /* Adjust size for subheaders */
+    color: #333333; /* Darker color for better contrast */
+    margin-bottom: 0.25em;
+}
+
+.column ul {
+    list-style-type: none; /* Remove bullet points for a cleaner look */
+    padding-left: 0; /* Align list with other text */
+}
+
+.column li {
+    font-size: 2em;
+    margin-bottom: 0.25em;
+}
+
+.column {
+    flex: 0 0 calc(50% - 20px); /* Set column width to 1/2 of container width */
+    margin: 10px; /* Add margin between columns */
+    text-align: center; /* Center align column content */
+}
+
+.column li:before {
+    content:"•"; 
+    color:#3498db; 
+    display:inline-block;
+     width:1em;
+     margin-left:-1em
+} 
+
+/* Additional global styles */
+
+a:hover,
+.button:hover {
+   opacity: 0.8; /* Add hover effect for links and buttons */
+}
+
+.project-column {
+    flex: 0 0 calc(33.33% - 20px); /* Set column width to 1/3 of container width */
+    margin: 10px; /* Add margin between columns */
+    text-align: center; /* Center align column content */
+}
+
+.project-column img {
+    width: 100%; /* Make image fill column width */
+    height: 350px; /* Set specific height for the images */
+    object-fit: cover; /* Ensure the image covers the entire container */
+    margin-bottom: 10px; /* Add margin below image */
+}
+
+.column p,
+.project-column p {
+    font-size: 1.5em; /* Adjust paragraph font size */
+    font-weight: 1000;
+}
+
+.section-white {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.section-gray {
+    background-color: #f2f2f2;
+    color: #000000;
+}
+
+.section-blue {
+    background-color: #3498db;
+    color: #ffffff;
+}
+
+.section-header {
+    width: 100%;
+    text-align: center;
+}
+
+.project-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.hiring-content {
+    align-self: center; /* Align the block in the middle vertically */
+    margin-right: auto; /* Push the block to the left */
+    padding: 20px;
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: #3498db;
+    border: 2px solid #3498db;
+    text-decoration: none;
+    font-size: 1.2em;
+    margin-right: 10px;
+}
+
+.button:hover {
+    background-color: #3498db;
+    color: #fff;
+}
+
+#slider-root {
+    display: flex;
+    overflow: hidden;
+}
+
+.section-blue h1{
+    font-size: 50px;
+}
+
+.slide {
+    padding-top: 0px;
+    min-width: 15%;
+    transition: 1s;
+}
+
+#slider-root img {
+    width: 300px; /* This will make the image width 100% of its container */
+    height: 150px; /* Adjust this value as needed */
+    object-fit: cover; /* This will scale the image to fit its container */
+    margin: 0 15px;
+}
