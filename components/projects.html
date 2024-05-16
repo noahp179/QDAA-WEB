@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Right Sliding Drawer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    
+     <!-- Projects Container Styles -->
+    <style>
+        /* Custom styles for hover effects */
+        .project-card:hover {
+            transform: scale(1.1); /* Enlarge the image */
+        }
+        .project-card:hover .project-info {
+            opacity: 1; /* Ensure text info is fully visible on hover */
+        }
+        .subtitle-container {
+            display: inline-block;
+            text-align: left;
+        }
+        
+        .subtitle {
+            display: inline-block;
+            width: 100%;
+        }
+    </style>
+
+     <!-- Drawer and Overlay Styles -->
+    <style>
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -80%; /* Initially offscreen to the right */
+            width: 80%; /* Drawer width */
+            height: 100%;
+            background: #FFFFFF;
+            transition: right 0.3s ease-in-out;
+            z-index: 1000; /* Ensure drawer is above other content */
+        }
+
+        .drawer-open {
+            transform: translateX(0);
+        }
+
+        .drawer-closed {
+            transform: translateX(100%);
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 990; /* Below the drawer but above other content */
+        }
+        .swipe-icon, .close-btn {
+            position: absolute;
+            left: -1.5rem; /* Positioning the icon on the left edge of the drawer */
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            width: 3rem;
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        .close-btn {
+            transform: none; /* No rotation for the close button */
+            top: 1rem;
+            left: auto;
+            right: 1rem; /* Position on the top right corner inside the drawer */
+            width: 24px;
+            height: 24px;
+            background: none;
+            box-shadow: none;
+            font-size: 24px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .red-line {
+            position: absolute;
+            right: 35%; /* Positioned 35% from the right */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: red;
+        }
+
+        .drawer-content {
+            height: 100%;
+            overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+
+        .drawer-content::-webkit-scrollbar {
+            display: none; /* Safari and Chrome */
+        }
+        .non-selectable {
+            user-select: none;
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+        }
+
+        img {
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+    </style>
+
+    <!-- Drawer Content Styles-->
+    <style>
+        .carousel-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .carousel-images {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .carousel-item {
+            flex: 0 0 33.3333%;
+            padding: 0 8px;
+            box-sizing: border-box;
+            display: none; /* Hide all items by default */
+        }
+
+        .carousel-item.visible {
+            display: block; /* Show only visible items */
+        }
+
+        .scroll-arrow {
+            fill: white;
+            color: white;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .scroll-arrow:hover {
+            transform: translateY(-50%) scale(1.4);
+        }
+
+        #scroll-left, #scroll-left-desktop, #scroll-left-mobile {
+            left: 0;
+        }
+
+        #scroll-right, #scroll-right-desktop, #scroll-right-mobile {
+            right: 0;
+        }
+
+        .scroll-arrow img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .main-image-container {
+            width: 70%;
+            margin: 0 auto;
+        }
+
+        .main-image {
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .btn-view {
+            background-color: rgb(214, 188, 250);
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background-color: rgb(179, 143, 232);
+        }
+
+        .mobile-view {
+            display: block;
+        }
+
+        .desktop-view {
+            display: none;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-view {
+                display: none;
+            }
+
+            .desktop-view {
+                display: block;
+            }
+        }
+    </style>
+
+</head>
+<body style="background-color: #171923;" class="font-sans leading-normal tracking-normal">
+    <!-- Project Section Title -->
+    <div class="text-center pt-12 pb-8">
+        <div class="max-w-screen-md mx-auto">
+            <div class="flex flex-col items-center">
+                <h1 class="text-6xl pb-4 font-bold inline-block" id="title">
+                    <span class="text-white">Our Projects</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-200 to-purple-500">Showcase</span>
+                </h1>
+                <div id="subtitle-container" class="w-full flex justify-center">
+                    <p class="text-white text-lg font-bold mt-4 leading-relaxed break-words" id="subtitle">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Script To Align Subtitle with Title -->
+    <script>
+        window.onload = function() {
+            const title = document.getElementById('title');
+            const subtitle = document.getElementById('subtitle');
+            subtitle.style.width = `${title.offsetWidth}px`;
+        }
+    </script>
+    
+
+    <!-- Project Cards Container -->
+    <div class="px-8 mx-auto max-w-7xl">
+        <div class="flex flex-wrap justify-center gap-6">
+            <!-- Project card -->
+            <div class="relative group cursor-pointer w-80 h-80 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl project-card" onclick="openDrawer()">
+                <!-- Image container -->
+                <div class="h-2/3 overflow-hidden">
+                    <img src="../images/project-dashboard.jpg" alt="Character Generator"
+                        class="w-full h-full object-cover transform scale-100 transition-transform duration-300 project-image">
+                </div>
+                <!-- Text container with gradient background and hover effect -->
+                <div class="h-1/3 bg-gradient-to-t from-black to-transparent p-4 flex flex-col justify-end project-info transition-opacity duration-300">
+                    <h3 class="text-lg font-semibold text-gray-300">Project Generator</h3>
+                    <p class="text-sm text-gray-300">May 1, 2023</p>
+                    <p class="text-sm text-gray-300">by John Doe, Jane Smith</p>
+                </div>
+            </div>
+
+            <div class="relative group cursor-pointer w-80 h-80 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl project-card" onclick="openDrawer()">
+                <!-- Image container -->
+                <div class="h-2/3 overflow-hidden">
+                    <img src="../images/project-dashboard.jpg" alt="Character Generator"
+                        class="w-full h-full object-cover transform scale-100 transition-transform duration-300 project-image">
+                </div>
+                <!-- Text container with gradient background and hover effect -->
+                <div class="h-1/3 bg-gradient-to-t from-black to-transparent p-4 flex flex-col justify-end project-info transition-opacity duration-300">
+                    <h3 class="text-lg font-semibold text-gray-300">Project Generator</h3>
+                    <p class="text-sm text-gray-300">May 1, 2023</p>
+                    <p class="text-sm text-gray-300">by John Doe, Jane Smith</p>
+                </div>
+            </div>
+
+            <div class="relative group cursor-pointer w-80 h-80 rounded-lg overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl project-card" onclick="openDrawer()">
+                <!-- Image container -->
+                <div class="h-2/3 overflow-hidden">
+                    <img src="../images/project-dashboard.jpg" alt="Character Generator"
+                        class="w-full h-full object-cover transform scale-100 transition-transform duration-300 project-image">
+                </div>
+                <!-- Text container with gradient background and hover effect -->
+                <div class="h-1/3 bg-gradient-to-t from-black to-transparent p-4 flex flex-col justify-end project-info transition-opacity duration-300">
+                    <h3 class="text-lg font-semibold text-gray-300">Project Generator</h3>
+                    <p class="text-sm text-gray-300">May 1, 2023</p>
+                    <p class="text-sm text-gray-300">by John Doe, Jane Smith</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Drawer and Overlay -->
+    <div id="drawer" style="background-color: #171923;" class="drawer drawer-closed drawer-content overflow-y-auto">
+    
+        <!-- Drawer Contents -->
+
+        <!-- <div class="red-line"></div>  Visual guide for the split -->
+        <button class="close-btn" onclick="closeDrawer()">&#10005;</button> <!-- Close button -->
+        <div class="swipe-icon"></div>
+
+        <!-- Mobile Drawer View -->
+        <div class="mobile-view">
+            <div class="max-w-6xl px-10 mx-auto py-6">
+                <div class="grid gap-4">
+                    <div>
+                        <h1 class="text-white text-3xl font-bold">Acme Prism</h1>
+                        <p class="text-gray-300 dark:text-gray-400">Duis aute irure dolor in reprehenderit in voluptate</p>
+                    </div>
+                    <div class="grid gap-2">
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-500 dark:text-gray-400">
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">John Joe, Jane Smith</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-500 dark:text-gray-400">
+                                <path d="M8 2v4"></path>
+                                <path d="M16 2v4"></path>
+                                <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                                <path d="M3 10h18"></path>
+                            </svg>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">May 15, 2024</p>
+                        </div>
+                    </div>
+                    <div class="main-image-container">
+                        <img id="mainImageMobile" src="../images/placeholder_crop.png" alt="Main Product Image" class="main-image">
+                    </div>
+                    <div class="carousel-container">
+                        <button id="scroll-left-mobile" class="scroll-arrow">
+                            <img src="../images/arrow-prev.svg" alt="Previous">
+                        </button>
+                        <ul class="carousel-images" id="carouselImagesMobile">
+                            <li class="carousel-item visible">
+                                <img src="../images/placeholder_crop.png" alt="Product Image 1" onclick="changeMainImage('../images/placeholder_crop.png', 'mobile')">
+                            </li>
+                            <li class="carousel-item visible">
+                                <img src="../images/placeholder2_crop.png" alt="Product Image 2" onclick="changeMainImage('../images/placeholder2_crop.png', 'mobile')">
+                            </li>
+                            <li class="carousel-item visible">
+                                <img src="../images/placeholder3_crop.png" alt="Product Image 3" onclick="changeMainImage('../images/placeholder3_crop.png', 'mobile')">
+                            </li>
+                            <li class="carousel-item">
+                                <img src="../images/placeholder4_crop.png" alt="Product Image 4" onclick="changeMainImage('../images/placeholder4_crop.png', 'mobile')">
+                            </li>
+                            <li class="carousel-item">
+                                <img src="../images/placeholder5_crop.png" alt="Product Image 5" onclick="changeMainImage('../images/placeholder5_crop.png', 'mobile')">
+                            </li>
+                            <li class="carousel-item">
+                                <img src="../images/placeholder6_crop.png" alt="Product Image 6" onclick="changeMainImage('../images/placeholder6_crop.png', 'mobile')">
+                            </li>
+                        </ul>
+                        <button id="scroll-right-mobile" class="scroll-arrow">
+                            <img src="../images/arrow-next.svg" alt="Next">
+                        </button>
+                    </div>
+                    <div class="text-sm leading-loose text-gray-300 dark:text-gray-400">
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Dictum at tempor commodo ullamcorper a. Varius vel pharetra vel turpis. Suspendisse faucibus interdum posuere lorem ipsum dolor sit amet. Sed velit dignissim sodales ut. Et netus et malesuada fames ac turpis egestas. Non enim praesent elementum facilisis leo. Sit amet massa vitae tortor condimentum lacinia. Cras sed felis eget velit aliquet sagittis id consectetur purus. Justo nec ultrices dui sapien eget mi proin sed libero. Dignissim enim sit amet venenatis urna. Habitant morbi tristique senectus et netus. Et netus et malesuada fames ac turpis egestas. Eu ultrices vitae auctor eu augue.
+                        </p>
+                    </div>
+                    <div class="flex justify-center">
+                        <button class="w-2/3 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 btn-view h-11 rounded-md">
+                            View Repository
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Drawer View -->
+        <div class="desktop-view">
+            <div class="max-w-6xl px-4 mx-auto py-6">
+                <div class="grid gap-4 md:grid-cols-2 lg:gap-12 items-start">
+                    <!-- Main image and carousel -->
+                    <div class="order-1 md:order-1 grid gap-4">
+                        <div class="main-image-container">
+                            <img id="mainImageDesktop" src="../images/placeholder_crop.png" alt="Main Product Image" class="main-image">
+                        </div>
+                        <div class="carousel-container">
+                            <button id="scroll-left-desktop" class="scroll-arrow">
+                                <img src="../images/arrow-prev.svg" alt="Previous">
+                            </button>
+                            <ul class="carousel-images" id="carouselImagesDesktop">
+                                <li class="carousel-item visible">
+                                    <img src="../images/placeholder_crop.png" alt="Product Image 1" onclick="changeMainImage('../images/placeholder_crop.png', 'desktop')">
+                                </li>
+                                <li class="carousel-item visible">
+                                    <img src="../images/placeholder2_crop.png" alt="Product Image 2" onclick="changeMainImage('../images/placeholder2_crop.png', 'desktop')">
+                                </li>
+                                <li class="carousel-item visible">
+                                    <img src="../images/placeholder3_crop.png" alt="Product Image 3" onclick="changeMainImage('../images/placeholder3_crop.png', 'desktop')">
+                                </li>
+                                <li class="carousel-item">
+                                    <img src="../images/placeholder4_crop.png" alt="Product Image 4" onclick="changeMainImage('../images/placeholder4_crop.png', 'desktop')">
+                                </li>
+                                <li class="carousel-item">
+                                    <img src="../images/placeholder5_crop.png" alt="Product Image 5" onclick="changeMainImage('../images/placeholder5_crop.png', 'desktop')">
+                                </li>
+                                <li class="carousel-item">
+                                    <img src="../images/placeholder6_crop.png" alt="Product Image 6" onclick="changeMainImage('../images/placeholder6_crop.png', 'desktop')">
+                                </li>
+                            </ul>
+                            <button id="scroll-right-desktop" class="scroll-arrow">
+                                <img src="../images/arrow-next.svg" alt="Next">
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Title, subtitle, names, date, description and button -->
+                    <div class="order-2 md:order-2 grid gap-4">
+                        <div>
+                            <h1 class="text-white text-3xl font-bold">Acme Prism</h1>
+                            <p class="text-gray-300 dark:text-gray-400">Duis aute irure dolor in reprehenderit in voluptate</p>
+                        </div>
+                        <div class="grid gap-2">
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-500 dark:text-gray-400">
+                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">John Joe, Jane Smith</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-500 dark:text-gray-400">
+                                    <path d="M8 2v4"></path>
+                                    <path d="M16 2v4"></path>
+                                    <rect width="18" height="18" x="3" y="4" rx="2"></rect>
+                                    <path d="M3 10h18"></path>
+                                </svg>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">May 15, 2024</p>
+                            </div>
+                        </div>
+                        <div class="text-sm leading-loose text-gray-300 dark:text-gray-400">
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Dictum at tempor commodo ullamcorper a. Varius vel pharetra vel turpis. Suspendisse faucibus interdum posuere lorem ipsum dolor sit amet. Sed velit dignissim sodales ut. Et netus et malesuada fames ac turpis egestas. Non enim praesent elementum facilisis leo. Sit amet massa vitae tortor condimentum lacinia. Cras sed felis eget velit aliquet sagittis id consectetur purus. Justo nec ultrices dui sapien eget mi proin sed libero. Dignissim enim sit amet venenatis urna. Habitant morbi tristique senectus et netus. Et netus et malesuada fames ac turpis egestas. Eu ultrices vitae auctor eu augue.
+                            </p>
+                        </div>
+                        <button class="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 btn-view h-11 rounded-md px-8">
+                            View Repository
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Drawer and Overlay Script -->
+    <script>
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        let startTouchX, startTouchTime;
+        let isDragging = false;
+        let initialRight;
+
+        function openDrawer() {
+            drawer.style.right = '0';
+            overlay.style.display = 'block';
+            drawer.classList.remove('drawer-closed');
+            drawer.classList.add('drawer-open');
+            body.style.overflow = 'hidden'; // Disable background scrolling
+        }
+
+        function closeDrawer() {
+            drawer.style.right = '-80%';
+            overlay.style.display = 'none';
+        }
+
+        function startDrag(event) {
+            if (event.target.classList.contains('close-btn')) return; // Ignore drag starts on the close button
+            isDragging = true;
+            startTouchX = event.type.includes('mouse') ? event.clientX : event.touches[0].pageX;
+            startTouchTime = Date.now();
+            initialRight = parseFloat(drawer.style.right) * window.innerWidth / 100;
+            event.preventDefault();
+            document.body.style.userSelect = 'none'; // Disable text selection during drag
+        }
+
+        function doDrag(event) {
+            if (!isDragging) return;
+            const currentX = event.type.includes('mouse') ? event.clientX : event.touches[0].pageX;
+            const diffX = currentX - startTouchX;
+            const newRight = Math.max(-80, initialRight - (diffX / window.innerWidth * 80));
+
+            if (newRight > -80 && newRight < 0) {
+                drawer.style.right = `${newRight}%`;
+            }
+        }
+
+        function endDrag(event) {
+            isDragging = false;
+            document.body.style.userSelect = ''; // Re-enable text selection
+            const endX = event.type.includes('mouse') ? event.clientX : (event.changedTouches && event.changedTouches[0].pageX);
+            const diffX = endX - startTouchX;
+            const duration = Date.now() - startTouchTime;
+            const velocity = Math.abs(diffX / duration);
+
+            if (velocity > 0.5 || Math.abs(diffX) > window.innerWidth * 0.35) {
+                closeDrawer(); // Close on quick or long swipe
+            } else {
+                const currentRight = parseFloat(drawer.style.right);
+                if (currentRight > -40) {
+                    openDrawer(); // Open if more than half the drawer is visible
+                } else {
+                    closeDrawer(); // Otherwise, close the drawer
+                }
+            }
+        }
+
+        drawer.addEventListener('mousedown', startDrag);
+        drawer.addEventListener('touchstart', startDrag);
+        window.addEventListener('mousemove', doDrag);
+        window.addEventListener('touchmove', doDrag);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+        document.getElementById('openDrawer').addEventListener('click', openDrawer);
+    </script>
+
+    <!-- Drawer Carousel Slider Script-->
+    <script>
+        function changeMainImage(src, view) {
+            const mainImageId = view === 'mobile' ? 'mainImageMobile' : 'mainImageDesktop';
+            document.getElementById(mainImageId).src = src;
+        }
+
+        function setupCarousel(view) {
+            const imgList = document.getElementById(`carouselImages${view}`);
+            const scrollRight = document.getElementById(`scroll-right-${view.toLowerCase()}`);
+            const scrollLeft = document.getElementById(`scroll-left-${view.toLowerCase()}`);
+            const imageWidth = imgList.children[0].getBoundingClientRect().width;
+
+            let currentIndex = 0;
+            const itemsPerPage = 3;
+            const totalItems = imgList.children.length;
+
+            function updateCarousel() {
+                for (let i = 0; i < totalItems; i++) {
+                    imgList.children[i].classList.remove('visible');
+                }
+                for (let i = 0; i < itemsPerPage; i++) {
+                    const index = (currentIndex + i) % totalItems;
+                    imgList.children[index].classList.add('visible');
+                }
+            }
+
+            scrollRight.addEventListener('click', () => {
+                currentIndex = (currentIndex + itemsPerPage) % totalItems;
+                updateCarousel();
+            });
+
+            scrollLeft.addEventListener('click', () => {
+                currentIndex = (currentIndex - itemsPerPage + totalItems) % totalItems;
+                updateCarousel();
+            });
+
+            updateCarousel(); // Initial update to show the first set of items
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCarousel('Mobile');
+            setupCarousel('Desktop');
+        });
+    </script>
+
+
+</body>
+</html>

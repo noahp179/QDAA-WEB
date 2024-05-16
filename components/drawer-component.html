@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Right Sliding Drawer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -80%; /* Initially offscreen to the right */
+            width: 80%; /* Drawer width */
+            height: 100%;
+            background: #FFFFFF;
+            transition: right 0.3s ease-in-out;
+            z-index: 1000; /* Ensure drawer is above other content */
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 990; /* Below the drawer but above other content */
+        }
+        .swipe-icon, .close-btn {
+            position: absolute;
+            left: -1.5rem; /* Positioning the icon on the left edge of the drawer */
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            width: 3rem;
+            height: 8px;
+            background: #555;
+            border-radius: 4px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        .close-btn {
+            transform: none; /* No rotation for the close button */
+            top: 1rem;
+            left: auto;
+            right: 1rem; /* Position on the top right corner inside the drawer */
+            width: 24px;
+            height: 24px;
+            background: none;
+            box-shadow: none;
+            font-size: 24px;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .red-line {
+            position: absolute;
+            right: 35%; /* Positioned 35% from the right */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: red;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+    <button id="toggleDrawer" class="m-4 p-2 bg-blue-500 text-white rounded">Toggle Drawer</button>
+    <div id="drawer" class="drawer">
+        <div class="red-line"></div> <!-- Visual guide for the split -->
+        <button class="close-btn" onclick="closeDrawer()">&#10005;</button> <!-- Close button -->
+        <div class="swipe-icon"></div>
+        <p class="p-4">This is the drawer content. It slides in from the right.</p>
+    </div>
+    <div id="overlay" class="overlay"></div>
+    <script>
+        const drawer = document.getElementById('drawer');
+        const overlay = document.getElementById('overlay');
+        let startTouchX, startTouchTime;
+        let isDragging = false;
+        let initialRight;
+
+        function openDrawer() {
+            drawer.style.right = '0';
+            overlay.style.display = 'block';
+        }
+
+        function closeDrawer() {
+            drawer.style.right = '-80%';
+            overlay.style.display = 'none';
+        }
+
+        function startDrag(event) {
+            if (event.target.classList.contains('close-btn')) return; // Ignore drag starts on the close button
+            isDragging = true;
+            startTouchX = event.type.includes('mouse') ? event.clientX : event.touches[0].pageX;
+            startTouchTime = Date.now();
+            initialRight = parseFloat(drawer.style.right) * window.innerWidth / 100;
+            event.preventDefault();
+            document.body.style.userSelect = 'none'; // Disable text selection during drag
+        }
+
+        function doDrag(event) {
+            if (!isDragging) return;
+            const currentX = event.type.includes('mouse') ? event.clientX : event.touches[0].pageX;
+            const diffX = currentX - startTouchX;
+            const newRight = Math.max(-80, initialRight - (diffX / window.innerWidth * 80));
+
+            if (newRight > -80 && newRight < 0) {
+                drawer.style.right = `${newRight}%`;
+            }
+        }
+
+        function endDrag(event) {
+            isDragging = false;
+            document.body.style.userSelect = ''; // Re-enable text selection
+            const endX = event.type.includes('mouse') ? event.clientX : (event.changedTouches && event.changedTouches[0].pageX);
+            const diffX = endX - startTouchX;
+            const duration = Date.now() - startTouchTime;
+            const velocity = Math.abs(diffX / duration);
+
+            if (velocity > 0.5 || Math.abs(diffX) > window.innerWidth * 0.35) {
+                closeDrawer(); // Close on quick or long swipe
+            } else {
+                const currentRight = parseFloat(drawer.style.right);
+                if (currentRight > -40) {
+                    openDrawer(); // Open if more than half the drawer is visible
+                } else {
+                    closeDrawer(); // Otherwise, close the drawer
+                }
+            }
+        }
+
+        drawer.addEventListener('mousedown', startDrag);
+        drawer.addEventListener('touchstart', startDrag);
+        window.addEventListener('mousemove', doDrag);
+        window.addEventListener('touchmove', doDrag);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+        document.getElementById('toggleDrawer').addEventListener('click', openDrawer);
+    </script>
+</body>
+</html>
