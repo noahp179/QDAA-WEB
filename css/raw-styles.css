@@ -49,13 +49,21 @@ footer {
     color: white;
     height: 100vh; /* Full viewport height */
     padding: 1px 0;
-    font: bold
+    display: flex;
+    flex-direction: column; /* Align content vertically */
+    align-items: center; /* Center content horizontally */
+    justify-content: space-between; /* Distribute space between top and bottom */
+    text-align: center; /* Center text */
 }
+
 
 .section-intro header h1 {
     font-size: 6em; /* Increase font size */
-    text-align: left; /* Align text to the right */
-    padding-left: 65px; /* Move text to the right */
+}
+
+.section-intro h2 {
+    font-size: 2em; /* Adjust font size for the subheading */
+    margin-bottom: 80px; /* Add some space at the bottom */
 }
 
 .section-intro header p {
